@@ -25,7 +25,7 @@ class Page:
         return non_iterable_query_params | iterable_query_params
 
     def get_self_link(self) -> str:
-        return str(self.url)
+        return str(self.url.include_query_params())
 
     def get_first_link(self) -> str:
         query_params_as_dict = self.__get_query_params_as_dict()
