@@ -1,7 +1,7 @@
 from math import ceil
 from fastapi import status
 from fastapi.testclient import TestClient
-from requests.models import Response
+from httpx import Response
 
 
 def generate_links(
@@ -22,7 +22,7 @@ def generate_links(
 
 
 def test_simple_default_pagination_first_page(client: TestClient, users, generate_data, user_count):
-    response: Response = client.get("/users?page[number]=1&page[size]=30")
+    response: Response = client.request("get", "/users?page[number]=1&page[size]=30")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "data": [generate_data(user) for user in users[:30]],
@@ -31,7 +31,7 @@ def test_simple_default_pagination_first_page(client: TestClient, users, generat
 
 
 def test_simple_default_pagination_second_page(client: TestClient, users, generate_data, user_count):
-    response: Response = client.get("/users?page[number]=2&page[size]=30")
+    response: Response = client.request("get", "/users?page[number]=2&page[size]=30")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "data": [generate_data(user) for user in users[30:60]],
@@ -40,12 +40,12 @@ def test_simple_default_pagination_second_page(client: TestClient, users, genera
 
 
 def test_disable_pagination(client: TestClient, users, generate_data):
-    response: Response = client.get("/users?page[size]=0")
+    response: Response = client.request("get", "/users?page[size]=0")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"data": [generate_data(user) for user in users]}
 
 
 def test_wrong_page(client: TestClient, users, generate_data, user_count):
-    response: Response = client.get("/users?page[number]=424242&page[size]=30")
+    response: Response = client.request("get", "/users?page[number]=424242&page[size]=30")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"data": [], "links": generate_links(424242, 30, True, False, user_count)}
